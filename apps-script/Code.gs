@@ -23,12 +23,13 @@ function doPost(e){
     const b=JSON.parse((e&&e.postData&&e.postData.contents)||"{}"),p=b.payload||{},a=b.action;
     if(a==="login")return out(login(p));
     if(a==="setup")return out(setupDatabase());
-    if(a==="landingSetup")return out(landingSetup());
-    if(a==="landingList")return out(landingRead(p.entity));
-    if(["landingCreate","landingUpdate","landingDelete"].includes(a))return out(landingMutate(a.replace("landing"," ").trim().toLowerCase(),p,session));
+    if(a==="landingPublic")return out(landingPublic());
     if(a==="health")return out(health());
     const session=authenticate(p);
     if(!session)return out({success:false,message:"Sesi tidak valid atau sudah kedaluwarsa. Silakan login kembali."});
+    if(a==="landingSetup")return out(landingSetup());
+    if(a==="landingList")return out(landingRead(p.entity));
+    if(["landingCreate","landingUpdate","landingDelete"].includes(a))return out(landingMutate(a.replace("landing","").toLowerCase(),p,session));
     if(a==="dashboard")return out(dashboard(session));
     if(a==="list")return out(list(p,session));
     if(["create","update","delete"].includes(a))return out(mutate(a,p,session));
@@ -74,3 +75,5 @@ const LANDING_SHEETS={SchoolProfile:["Key","Value"],LandingBanners:["ID","Title"
 function landingSetup(){const b=ss();Object.entries(LANDING_SHEETS).forEach(([n,h])=>{let s=b.getSheetByName(n)||b.insertSheet(n);if(s.getLastRow()===0)s.appendRow(h);s.setFrozenRows(1)});const p=b.getSheetByName("SchoolProfile");if(p.getLastRow()<2)p.getRange(2,1,10,2).setValues([["school_name","Nama Sekolah / Madrasah"],["npsn",""],["logo_url",""],["address","Alamat sekolah"],["phone",""],["email",""],["website",""],["vision","Terwujudnya peserta didik yang berkarakter, berilmu, mandiri dan berprestasi."],["mission","Menyelenggarakan pendidikan bermutu, inovatif, berkarakter dan berorientasi masa depan."],["about","Selamat datang di website resmi sekolah."]]);return{success:true,message:"CMS Landing Page siap"}}
 function landingRead(entity){if(!LANDING_SHEETS[entity])throw Error("CMS entity tidak valid");const s=ss().getSheetByName(entity);if(!s)return{success:true,data:[]};return{success:true,data:rows(entity).map(({__row,...x})=>x)}}
 function landingMutate(action,p,s){if(s.role!=="Admin")throw Error("Hanya Admin yang dapat mengubah konten website");const e=p.entity;if(!LANDING_SHEETS[e])throw Error("CMS entity tidak valid");return mutate(action,{entity:e,data:p.data,id:p.id},s)}
+
+function landingPublic(){const profile={};try{rows("SchoolProfile").forEach(x=>profile[x.Key]=x.Value)}catch(e){}const active=n=>{try{return rows(n).filter(x=>String(x.Status||"").toLowerCase()==="aktif")}catch(e){return[]}};return{success:true,data:{profile,banners:active("LandingBanners"),news:active("News"),agenda:active("Agenda"),gallery:active("Gallery"),ppdb:active("PPDB")}}}
