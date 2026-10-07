@@ -1,21 +1,19 @@
-# SIAKAD + LMS — Google Sheet
+# SIAKAD + LMS — Google Sheets
 
-Aplikasi SIAKAD dan LMS berbasis **GitHub Pages + Google Apps Script + Google Sheets**.
+SIAKAD & LMS berbasis **GitHub Pages + Google Apps Script + Google Sheets**.
 
-## Modul
+## Fitur saat ini
 - Dashboard statistik
-- Manajemen siswa, guru, kelas, mata pelajaran
-- Nilai
-- Presensi
-- Kelas LMS
-- Materi
-- Tugas
-- Pengumpulan tugas
+- Data Siswa, Guru, Kelas, Mata Pelajaran
+- Nilai dan Presensi
+- Kelas LMS, Materi, Tugas, Pengumpulan
 - Pengumuman
 - CRUD tambah, edit, hapus
 - Pencarian data
-- Role Admin, Guru, Siswa
-- Responsive desktop/tablet/HP
+- Role **Admin, Guru, Siswa**
+- Session token server-side
+- Audit log aktivitas
+- Responsive desktop, tablet, dan HP
 
 ## Struktur
 ```
@@ -32,29 +30,29 @@ T-faces/SIAKAD
 └── docs/
 ```
 
-## Instalasi database
-1. Buat Google Spreadsheet baru.
+## Setup Google Sheets
+1. Buat Google Spreadsheet.
 2. Buka **Extensions → Apps Script**.
-3. Salin `apps-script/Code.gs`.
-4. Ganti `SPREADSHEET_ID` dengan ID spreadsheet.
-5. Jalankan fungsi `setupDatabase()` sekali.
-6. Deploy → New deployment → Web app.
-7. Execute as **Me**.
+3. Salin isi `apps-script/Code.gs`.
+4. Pastikan `SPREADSHEET_ID` sesuai ID spreadsheet.
+5. Jalankan `setupDatabase()` sekali dan izinkan akses.
+6. Deploy → **New deployment** → **Web app**.
+7. Execute as: **Me**.
 8. Who has access: **Anyone**.
-9. Salin URL Web App.
-10. Masukkan URL ke `frontend/js/config.js`.
-
-## GitHub Pages
-Aktifkan GitHub Pages pada branch **Master** dan folder **/ (root)**. Halaman root akan membuka frontend SIAKAD.
+9. Salin URL Web App ke `frontend/js/config.js`.
+10. Jika Apps Script sudah pernah di-deploy, buat **deployment version baru** setelah perubahan Code.gs.
 
 ## Akun demo
 - Admin: `admin / admin123`
 - Guru: `guru / guru123`
 - Siswa: `siswa / siswa123`
 
-Segera ganti password demo sebelum digunakan di lingkungan sekolah.
+Segera ganti password demo sebelum digunakan untuk data sekolah sebenarnya.
 
-## Catatan penting
-GitHub Pages tidak dapat menjadi database. Semua data permanen berada di Google Sheets melalui Apps Script API.
+## Catatan keamanan
+Frontend tidak lagi mengirim role sebagai sumber otorisasi. Setelah login, Apps Script memberikan session token dan setiap request API memvalidasi token tersebut. Aktivitas create/update/delete dicatat ke sheet `ActivityLog`.
 
-Untuk penggunaan produksi, tambahkan hashing password/token session, pembatasan akses server-side, audit log, backup spreadsheet, validasi input dan Google OAuth.
+Untuk produksi, disarankan mengganti password plaintext dengan password hashing, menambahkan pengaturan akun/password dari panel Admin, validasi field yang lebih ketat, backup spreadsheet berkala, dan Google OAuth bila diperlukan.
+
+## GitHub Pages
+Aktifkan GitHub Pages pada branch **Master** dan folder **/ (root)**. File root akan mengarahkan pengguna ke `frontend/`.
