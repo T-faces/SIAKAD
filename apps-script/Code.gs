@@ -10,6 +10,7 @@ function setupDatabase(){
   Object.entries(SHEETS).forEach(([n,h])=>{let s=book.getSheetByName(n)||book.insertSheet(n);if(s.getLastRow()===0)s.appendRow(h);s.setFrozenRows(1)});
   const u=book.getSheetByName("Users");
   if(u.getLastRow()<2)u.getRange(2,1,3,8).setValues([["U001","admin","admin123","Administrator","Admin","","Aktif",new Date()],["U002","guru","guru123","Guru Demo","Guru","","Aktif",new Date()],["U003","siswa","siswa123","Siswa Demo","Siswa","","Aktif",new Date()]]);
+  landingSetup();
   return{success:true,message:"Database siap",spreadsheet:book.getName(),users:u.getLastRow()-1};
 }
 function doGet(e){
