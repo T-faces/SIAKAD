@@ -27,8 +27,8 @@ function doPost(e){
     if(a==="health")return out(health());
     const session=authenticate(p);
     if(!session)return out({success:false,message:"Sesi tidak valid atau sudah kedaluwarsa. Silakan login kembali."});
-    if(a==="landingSetup")return out(landingSetup());
-    if(a==="landingList")return out(landingRead(p.entity));
+    if(a==="landingSetup"){if(session.role!=="Admin")return out({success:false,message:"Akses ditolak"});return out(landingSetup())}
+    if(a==="landingList"){if(session.role!=="Admin")return out({success:false,message:"Akses ditolak"});return out(landingRead(p.entity))}
     if(["landingCreate","landingUpdate","landingDelete"].includes(a))return out(landingMutate(a.replace("landing","").toLowerCase(),p,session));
     if(a==="dashboard")return out(dashboard(session));
     if(a==="list")return out(list(p,session));
