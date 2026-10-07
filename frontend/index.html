@@ -21,11 +21,12 @@
 </div>
 
 <div id="app" class="d-none">
-<nav class="navbar navbar-dark bg-primary sticky-top">
-  <div class="container-fluid"><button id="toggle" class="btn btn-outline-light">☰</button><b>SIAKAD & LMS</b><button id="logout" class="btn btn-light btn-sm">Keluar</button></div>
-</nav>
+<nav class="navbar navbar-dark bg-primary sticky-top shadow-sm"><div class="container-fluid px-3">
+<div class="d-flex align-items-center gap-2"><button id="toggle" class="btn btn-outline-light">☰</button><span class="fw-bold fs-5">SIAKAD <small class="fw-normal opacity-75">• Sekolah</small></span></div>
+<div class="d-flex align-items-center gap-3"><span id="topDate" class="d-none d-md-inline small opacity-75"></span><span id="topUser" class="d-none d-md-inline"></span><button id="logout" class="btn btn-light btn-sm rounded-pill px-3">Keluar</button></div>
+</div></nav>
 <div class="layout">
-<aside id="side"><div id="who" class="fw-bold p-2 border-bottom mb-2"></div>
+<aside id="side"><div class="p-3 mb-3 rounded-4 bg-primary text-white"><div class="small opacity-75">LOGIN SEBAGAI</div><div id="who" class="fw-bold mt-1"></div><div id="roleBadge" class="badge bg-light text-primary mt-2"></div></div><div class="small text-uppercase text-secondary fw-bold px-2 mb-2">Menu Utama</div>
 <button data-page="dashboard">🏠 Dashboard</button><button data-page="Students">👨‍🎓 Data Siswa</button><button data-page="Teachers">👨‍🏫 Data Guru</button><button data-page="Classes">🏫 Kelas</button><button data-page="Subjects">📚 Mata Pelajaran</button><button data-page="Grades">📝 Nilai</button><button data-page="Attendance">📅 Presensi</button><hr>
 <button data-page="Courses">🎓 Kelas LMS</button><button data-page="Materials">📖 Materi</button><button data-page="Assignments">📋 Tugas</button><button data-page="Submissions">📤 Pengumpulan</button><button data-page="Announcements">📢 Pengumuman</button>
 </aside><main id="content"></main></div></div>
