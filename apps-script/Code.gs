@@ -1,7 +1,7 @@
 const SPREADSHEET_ID="1gEZu_8HjIJLMJ9PE3tV1a7GZfhk5N5qbhyxn9DxU-EA";
 const SESSION_TTL=21600;
 const SHEETS={
-Users:["ID","Username","Password","Nama","Role","Email","Status","CreatedAt"],Students:["ID","NISN","Nama","Kelas","JK","Email","Status"],Teachers:["ID","NIP","Nama","Mapel","Email","Status"],Classes:["ID","Kode","Nama Kelas","Wali Kelas","Tahun Ajaran"],Subjects:["ID","Kode","Nama","Guru","KKM"],Courses:["ID","Kode","Nama Kursus","Guru","Deskripsi","Status"],Materials:["ID","Kursus","Judul","Deskripsi","URL","Tanggal","Status"],Assignments:["ID","Kursus","Judul","Deskripsi","URL","Batas Waktu","Status"],Submissions:["ID","AssignmentID","SiswaID","JawabanURL","TanggalKumpul","Status"],Grades:["ID","Siswa","Mapel","Tugas","UTS","UAS","Nilai Akhir","Semester","Tahun Ajaran"],Attendance:["ID","Tanggal","Siswa","Kelas","Mapel","Status","Keterangan"],Announcements:["ID","Judul","Isi","Tanggal","Status"],Settings:["Key","Value"],ActivityLog:["Timestamp","Username","Action","Entity","RecordID"]};
+Users:["ID","Username","Password","Nama","Role","Email","Status","CreatedAt"],Students:["ID","NISN","Nama","Kelas","JK","Email","Status"],Teachers:["ID","NIP","Nama","Mapel","Email","Status"],Classes:["ID","Kode","Nama Kelas","Wali Kelas","Tahun Ajaran"],Subjects:["ID","Kode","Nama","Guru","KKM"],Courses:["ID","Kode","Nama Kursus","Guru","Deskripsi","Status"],Materials:["ID","Kursus","Judul","Deskripsi","URL","Tanggal","Status"],Assignments:["ID","Kursus","Judul","Deskripsi","URL","Batas Waktu","Status"],Submissions:["ID","AssignmentID","SiswaID","JawabanURL","TanggalKumpul","Status"],Grades:["ID","Siswa","Mapel","Tugas","UTS","UAS","Nilai Akhir","Semester","Tahun Ajaran"],Attendance:["ID","Tanggal","Siswa","Kelas","Mapel","Status","Keterangan"],Announcements:["ID","Judul","Isi","Tanggal","Status"],Settings:["Key","Value"],ActivityLog:["Timestamp","Username","Action","Entity","RecordID"],SchoolProfile:["Key","Value"],LandingBanners:["ID","Title","Subtitle","ImageURL","ButtonText","ButtonURL","Status"],News:["ID","Title","Excerpt","Content","ImageURL","Date","Status"],Agenda:["ID","Title","Description","Date","Time","Location","Status"],Gallery:["ID","Title","ImageURL","Caption","Date","Status"],PPDB:["ID","Title","Description","StartDate","EndDate","URL","Status"]};
 const ROLES={Admin:["*"],Guru:["Students","Classes","Subjects","Courses","Materials","Assignments","Submissions","Grades","Attendance","Announcements"],Siswa:["Courses","Materials","Assignments","Submissions","Grades","Attendance","Announcements"]};
 
 function ss(){try{return SpreadsheetApp.openById(SPREADSHEET_ID)}catch(e){throw Error("Spreadsheet tidak dapat dibuka. Periksa SPREADSHEET_ID dan izin akses Apps Script.")}}
@@ -23,6 +23,9 @@ function doPost(e){
     const b=JSON.parse((e&&e.postData&&e.postData.contents)||"{}"),p=b.payload||{},a=b.action;
     if(a==="login")return out(login(p));
     if(a==="setup")return out(setupDatabase());
+    if(a==="landingSetup")return out(landingSetup());
+    if(a==="landingList")return out(landingRead(p.entity));
+    if(["landingCreate","landingUpdate","landingDelete"].includes(a))return out(landingMutate(a.replace("landing"," ").trim().toLowerCase(),p,session));
     if(a==="health")return out(health());
     const session=authenticate(p);
     if(!session)return out({success:false,message:"Sesi tidak valid atau sudah kedaluwarsa. Silakan login kembali."});
@@ -67,3 +70,7 @@ function mutate(action,p,s){
   throw Error("Operasi tidak valid");
 }
 function logActivity(s,a,e,id){try{sheet("ActivityLog").appendRow([new Date(),s.username,a,e,id||""])}catch(err){}}
+\nconst LANDING_SHEETS={SchoolProfile:["Key","Value"],LandingBanners:["ID","Title","Subtitle","ImageURL","ButtonText","ButtonURL","Status"],News:["ID","Title","Excerpt","Content","ImageURL","Date","Status"],Agenda:["ID","Title","Description","Date","Time","Location","Status"],Gallery:["ID","Title","ImageURL","Caption","Date","Status"],PPDB:["ID","Title","Description","StartDate","EndDate","URL","Status"]};
+function landingSetup(){const b=ss();Object.entries(LANDING_SHEETS).forEach(([n,h])=>{let s=b.getSheetByName(n)||b.insertSheet(n);if(s.getLastRow()===0)s.appendRow(h);s.setFrozenRows(1)});const p=b.getSheetByName("SchoolProfile");if(p.getLastRow()<2)p.getRange(2,1,10,2).setValues([["school_name","Nama Sekolah / Madrasah"],["npsn",""],["logo_url",""],["address","Alamat sekolah"],["phone",""],["email",""],["website",""],["vision","Terwujudnya peserta didik yang berkarakter, berilmu, mandiri dan berprestasi."],["mission","Menyelenggarakan pendidikan bermutu, inovatif, berkarakter dan berorientasi masa depan."],["about","Selamat datang di website resmi sekolah."]]);return{success:true,message:"CMS Landing Page siap"}}
+function landingRead(entity){if(!LANDING_SHEETS[entity])throw Error("CMS entity tidak valid");const s=ss().getSheetByName(entity);if(!s)return{success:true,data:[]};return{success:true,data:rows(entity).map(({__row,...x})=>x)}}
+function landingMutate(action,p,s){if(s.role!=="Admin")throw Error("Hanya Admin yang dapat mengubah konten website");const e=p.entity;if(!LANDING_SHEETS[e])throw Error("CMS entity tidak valid");return mutate(action,{entity:e,data:p.data,id:p.id},s)}
