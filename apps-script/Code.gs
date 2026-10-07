@@ -34,7 +34,7 @@ function doPost(e){
     if(a==="dashboard")return out(dashboard(session));
     if(a==="list")return out(list(p,session));
     if(["create","update","delete"].includes(a))return out(mutate(a,p,session));
-    if(a==="logout"){CacheService.getScriptCache().remove("SIAKAD_"+session.token);return out({success:true,message:"Logout berhasil"})}
+    if(a==="logout"){const key="SIAKAD_"+session.token;CacheService.getScriptCache().remove(key);PropertiesService.getScriptProperties().deleteProperty(key);return out({success:true,message:"Logout berhasil"})}
     return out({success:false,message:"Action tidak dikenal: "+a});
   }catch(err){return out({success:false,message:err.message||String(err)})}
 }
@@ -54,10 +54,10 @@ function login(p){
   const u=users.find(x=>clean(x.Username).toLowerCase()===username&&String(x.Password)===password&&clean(x.Status).toLowerCase()==="aktif");
   if(!u)return{success:false,message:"Username/password salah atau akun tidak aktif."};
   const token=Utilities.getUuid(),session={token,username:clean(u.Username),nama:clean(u.Nama),role:clean(u.Role),email:clean(u.Email)};
-  CacheService.getScriptCache().put("SIAKAD_"+token,JSON.stringify(session),SESSION_TTL);
+  CacheService.getScriptCache().put("SIAKAD_"+token,JSON.stringify(session),SESSION_TTL);PropertiesService.getScriptProperties().setProperty("SIAKAD_"+token,JSON.stringify({...session,expiresAt:Date.now()+SESSION_TTL*1000}));
   return{success:true,message:"Login berhasil",user:{username:session.username,nama:session.nama,role:session.role,email:session.email},token,permissions:ROLES[session.role]||[]};
 }
-function authenticate(p){if(!p||!p.token)return null;const raw=CacheService.getScriptCache().get("SIAKAD_"+p.token);if(!raw)return null;try{return JSON.parse(raw)}catch(e){return null}}
+function authenticate(p){if(!p||!p.token)return null;const key="SIAKAD_"+p.token;let raw=CacheService.getScriptCache().get(key);if(!raw)raw=PropertiesService.getScriptProperties().getProperty(key);if(!raw)return null;try{const s=JSON.parse(raw);if(s.expiresAt&&Date.now()>Number(s.expiresAt)){CacheService.getScriptCache().remove(key);PropertiesService.getScriptProperties().deleteProperty(key);return null}CacheService.getScriptCache().put(key,JSON.stringify(s),SESSION_TTL);return s}catch(e){return null}}
 function allowed(role,entity,action){if(role==="Admin")return true;if(["read","create","update"].includes(action))return(ROLES[role]||[]).includes(entity);return false}
 function health(){const u=rows("Users");return{success:true,api:"online",spreadsheet:ss().getName(),users:u.length,headers:SHEETS.Users}}
 function dashboard(s){return{success:true,user:{username:s.username,nama:s.nama,role:s.role},stats:{students:rows("Students").length,teachers:rows("Teachers").length,classes:rows("Classes").length,subjects:rows("Subjects").length,courses:rows("Courses").length,materials:rows("Materials").length,assignments:rows("Assignments").length,submissions:rows("Submissions").length,grades:rows("Grades").length,attendance:rows("Attendance").length},announcements:rows("Announcements").slice(-5).reverse()}}
