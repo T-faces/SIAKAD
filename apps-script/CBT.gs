@@ -147,7 +147,7 @@ function cbtHandleAction(action,p){
     let score=0,max=0,correct=0,essay=0;
     qs.forEach(q=>{const pts=Math.max(0,Number(q.Points)||1);max+=pts;if(q.Type==="ESSAY"){essay++;return;}const r=rs.find(x=>x.QuestionID===q.ID);let expected,actual;try{expected=JSON.parse(q.AnswerKey||'""');}catch(e){expected=q.AnswerKey;}try{actual=JSON.parse(r?r.Answer:'""');}catch(e){actual=r?r.Answer:"";}if(JSON.stringify(actual)===JSON.stringify(expected)){score+=pts;correct++;}});
     const sh=ss().getSheetByName("CBTResults");const row=result.__row;
-    sh.getRange(row,5,1,7).setValues([[new Date().toISOString(),score,max,correct,essay,"Submitted",""]]);
+    sh.getRange(row,5,1,6).setValues([[new Date().toISOString(),score,max,correct,essay,"Submitted"]]);
     cbtLog_(e.ID,auth.participantId,"SUBMIT","Nilai otomatis dihitung; esai menunggu pemeriksaan.");
     return {success:true,message:"Ujian berhasil dikumpulkan.",score,maxScore:max,correctCount:correct,essayPending:essay,showResult:String(e.ShowResult)!=="FALSE"};
   }
