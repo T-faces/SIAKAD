@@ -26,6 +26,7 @@ function doPost(e){
     if(a==="setup")return out(setupDatabase());
     if(a==="landingPublic")return out(landingPublic());
     if(a==="health")return out(health());
+    if(String(a||"").indexOf("cbt")===0)return out(cbtHandleAction(a,p));
     const session=authenticate(p);
     if(!session)return out({success:false,message:"Sesi tidak valid atau sudah kedaluwarsa. Silakan login kembali."});
     if(a==="landingSetup"){if(session.role!=="Admin")return out({success:false,message:"Akses ditolak"});return out(landingSetup())}
